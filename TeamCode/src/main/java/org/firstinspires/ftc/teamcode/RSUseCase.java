@@ -25,6 +25,7 @@ public class RSUseCase extends LinearOpMode {
         while(true){
             if (a.getDepth() < 0.5){
                 pause();
+                runtime.log("Stopped");
                 break;
             }
         }
