@@ -14,8 +14,14 @@
 // Include common definitions from above.
 apply from: '../build.common.gradle'
 apply from: '../build.dependencies.gradle'
+repositories {
+    maven{
+        url "https://egiintel.jfrog.io/artifactory/librealsense"
+    }
+}
 
 dependencies {
     implementation project(':FtcRobotController')
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
+    implementation 'com.intel.realsense:librealsense:2.49.0@aar'
 }

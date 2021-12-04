@@ -15,7 +15,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.0.1'
+        classpath 'com.android.tools.build:gradle:7.0.3'
     }
 }
 
@@ -35,6 +35,9 @@ repositories {
     flatDir {
         dirs '../libs'
     }
+    maven{
+        url "https://egiintel.jfrog.io/artifactory/librealsense"
+    }
 }
 
 dependencies {
@@ -43,6 +46,7 @@ dependencies {
     doc 'org.firstinspires.ftc:FtcCommon:6.2.0'
     doc 'org.firstinspires.ftc:OnBotJava:6.2.0'
     doc 'org.firstinspires.ftc:Inspection:6.2.0'
+
 }
 
 task extractJavadoc {
