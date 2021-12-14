@@ -26,7 +26,6 @@ public class MainRun extends OpMode {
 
     BNO055IMU imu;
     Orientation angles;
-   // DcMotor motor;
 
     public void init() {
         frontrightmotor = hardwareMap.dcMotor.get("FRM");
@@ -64,6 +63,7 @@ public class MainRun extends OpMode {
         double radJoystick = Math.atan2(y,x);
         double radHeading = heading/(180/Math.PI)+(Math.PI/2);
         if (radHeading<0) radHeading+=(2*Math.PI);
+        if (radJoystick<0) radJoystick+=(2*Math.PI);
 
         frontrightmotor.setPower(frontrightmotorpower*speedScale);
         frontleftmotor.setPower(frontleftmotorpower*speedScale);
