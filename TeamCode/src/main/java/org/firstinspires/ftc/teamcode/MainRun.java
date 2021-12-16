@@ -18,6 +18,8 @@ public class MainRun extends OpMode {
     DcMotor frontleftmotor;
     DcMotor backrightmotor;
     DcMotor backleftmotor;
+    DcMotor baseMotor;
+    DcMotor topMotor;
     double speedScale = 0.5;
     double frontrightmotorpower;
     double frontleftmotorpower;
@@ -32,6 +34,23 @@ public class MainRun extends OpMode {
         frontleftmotor = hardwareMap.dcMotor.get("FLM");
         backrightmotor = hardwareMap.dcMotor.get("BRM");
         backleftmotor = hardwareMap.dcMotor.get("BLM");
+        baseMotor = hardwareMap.dcMotor.get("base");
+        topMotor = hardwareMap.dcMotor.get("ratio");
+        baseMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        baseMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        frontrightmotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontrightmotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        frontleftmotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontleftmotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        backrightmotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backrightmotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        backleftmotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backleftmotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
         frontrightmotor.setDirection(DcMotorSimple.Direction.REVERSE);
         frontleftmotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backrightmotor.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -63,18 +82,24 @@ public class MainRun extends OpMode {
         double radJoystick = Math.atan2(y,x);
         double radHeading = heading/(180/Math.PI)+(Math.PI/2);
         if (radHeading<0) radHeading+=(2*Math.PI);
-        if (radJoystick<0) radJoystick+=(2*Math.PI);
 
         frontrightmotor.setPower(frontrightmotorpower*speedScale);
         frontleftmotor.setPower(frontleftmotorpower*speedScale);
         backrightmotor.setPower(backrightmotorpower*speedScale);
         backleftmotor.setPower(backleftmotorpower*speedScale);
+        baseMotor.setPower(gamepad1.right_trigger);
+
+        telemetry.addLine("Base: " + baseMotor.getCurrentPosition());
+        telemetry.addLine("FRM: " + frontrightmotor.getCurrentPosition());
+        telemetry.addLine("FLM: " + frontleftmotor.getCurrentPosition());
+        telemetry.addLine("BRM: " + backrightmotor.getCurrentPosition());
+        telemetry.addLine("BLM: " + backleftmotor.getCurrentPosition());
 
         telemetry.addLine("Gamepad1.y: " + y);
         telemetry.addLine("Gamepad1.x: " + x);
         telemetry.addLine("IMU: " + heading);
         telemetry.addLine("Joystick: " + radJoystick*(180/Math.PI));
         telemetry.addLine("Current heading: " + radHeading*(180/Math.PI));
-
+        telemetry.update();
     }
 }
