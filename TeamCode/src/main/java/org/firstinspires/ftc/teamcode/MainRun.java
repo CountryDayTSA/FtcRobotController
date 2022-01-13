@@ -36,8 +36,12 @@ public class MainRun extends OpMode {
         backleftmotor = hardwareMap.dcMotor.get("BLM");
         baseMotor = hardwareMap.dcMotor.get("base");
         topMotor = hardwareMap.dcMotor.get("ratio");
+
         baseMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         baseMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        topMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        topMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         frontrightmotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontrightmotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -55,6 +59,7 @@ public class MainRun extends OpMode {
         frontleftmotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backrightmotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backleftmotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        baseMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
@@ -87,9 +92,11 @@ public class MainRun extends OpMode {
         frontleftmotor.setPower(frontleftmotorpower*speedScale);
         backrightmotor.setPower(backrightmotorpower*speedScale);
         backleftmotor.setPower(backleftmotorpower*speedScale);
-        baseMotor.setPower(gamepad1.right_trigger);
+        baseMotor.setPower(gamepad2.left_stick_y*.3);
+        topMotor.setPower(gamepad2.right_stick_y*.3);
 
         telemetry.addLine("Base: " + baseMotor.getCurrentPosition());
+        telemetry.addLine("Top: " + topMotor.getCurrentPosition());
         telemetry.addLine("FRM: " + frontrightmotor.getCurrentPosition());
         telemetry.addLine("FLM: " + frontleftmotor.getCurrentPosition());
         telemetry.addLine("BRM: " + backrightmotor.getCurrentPosition());
