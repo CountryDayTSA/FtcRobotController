@@ -46,7 +46,15 @@ public class V1 extends LinearOpMode {
         timer.reset();
     }
 
-    public void seconds() {
-        timer.seconds();
+    public double seconds() {
+        return timer.seconds();
     }
+
+    public void encoderTelemetry() {
+        telemetry.addLine("FRM: " + frontrightmotor.getCurrentPosition());
+        telemetry.addLine("FLM: " + frontleftmotor.getCurrentPosition());
+        telemetry.addLine("BRM: " + backrightmotor.getCurrentPosition());
+        telemetry.addLine("BLM: " + backleftmotor.getCurrentPosition());
+    }
+
 }
