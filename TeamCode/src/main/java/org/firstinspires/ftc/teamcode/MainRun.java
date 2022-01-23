@@ -37,15 +37,13 @@ public class MainRun extends OpMode {
     final double wheelRadius = 4.8; //cm
     final double countsPerInch = (2*wheelRadius*Math.PI)/2.54;
 
-
-
     public void init() {
         frontrightmotor = hardwareMap.dcMotor.get("FRM");
         frontleftmotor = hardwareMap.dcMotor.get("FLM");
         backrightmotor = hardwareMap.dcMotor.get("BRM");
         backleftmotor = hardwareMap.dcMotor.get("BLM");
         baseMotor = hardwareMap.dcMotor.get("base");
-        topMotor = hardwareMap.dcMotor.get("ratio");
+        topMotor = hardwareMap.dcMotor.get("top");
         boxServo = hardwareMap.servo.get("box");
 
         baseMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -69,7 +67,7 @@ public class MainRun extends OpMode {
         frontrightmotor.setDirection(DcMotorSimple.Direction.REVERSE);
         frontleftmotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backrightmotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        backleftmotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        //backleftmotor.setDirection(DcMotorSimple.Direction.REVERSE);
         baseMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -90,35 +88,43 @@ public class MainRun extends OpMode {
         angles = imu.getAngularOrientation().toAxesReference(AxesReference.INTRINSIC).toAxesOrder(AxesOrder.ZYX);
         double heading = AngleUnit.DEGREES.normalize(angles.firstAngle);
 
-        frontrightmotorpower = y-turn-x;
-        frontleftmotorpower = y+turn+x;
-        backrightmotorpower = y-turn+x;
-        backleftmotorpower = y+turn-x;
-
-        if (gamepad1.a) servoposition=0.8;
-        else if (gamepad1.b) servoposition=0.41;
-        else if (gamepad1.y) servoposition=0.1;
-
-        if (gamepad1.dpad_up && baseMotor.getCurrentPosition()<130) basePosition+=5;
-        else if (gamepad1.dpad_down && baseMotor.getCurrentPosition()>5) basePosition-=5;
+        double speed = Math.sqrt(x*x+y*y);
+        if (Math.abs(speed)>1) speed/=Math.abs(speed);
 
         double radJoystick = Math.atan2(y,x);
         if (radJoystick<0) radJoystick+=(2*Math.PI);
         double radHeading = heading/(180/Math.PI)+(Math.PI/2);
         if (radHeading<0) radHeading+=(2*Math.PI);
 
-        frontrightmotor.setPower(frontrightmotorpower*speedScale);
-        frontleftmotor.setPower(frontleftmotorpower*speedScale);
-        backrightmotor.setPower(backrightmotorpower*speedScale);
-        backleftmotor.setPower(backleftmotorpower*speedScale);
-        //baseMotor.setPower(gamepad2.left_stick_y*.3);
+        double targetHeading = radJoystick+(Math.PI/2-radHeading);
+
+        frontrightmotorpower = (Math.sin(targetHeading)-Math.cos(targetHeading))/Math.sqrt(2);
+        frontleftmotorpower = (Math.sin(targetHeading)+Math.cos(targetHeading))/Math.sqrt(2);
+        backrightmotorpower = (Math.sin(targetHeading)+Math.cos(targetHeading))/Math.sqrt(2);
+        backleftmotorpower = (Math.sin(targetHeading)-Math.cos(targetHeading))/Math.sqrt(2);
+
+        if (gamepad1.a) servoposition=0.8;
+        else if (gamepad1.b) servoposition=0.4;
+        else if (gamepad1.y) servoposition=0.1;
+
+        if (gamepad1.dpad_up) basePosition+=3;
+        else if (gamepad1.dpad_down) basePosition-=3;
+
         baseMotor.setTargetPosition(basePosition);
+        baseMotor.setPower(0.45);
         baseMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        frontrightmotor.setPower((0.7*(speed*frontrightmotorpower)-.3*turn)*speedScale);
+        frontleftmotor.setPower((0.7*(speed*frontleftmotorpower)+.3*turn)*speedScale);
+        backrightmotor.setPower((0.7*(speed*backrightmotorpower)-.3*turn)*speedScale);
+        backleftmotor.setPower((0.7*(speed*backleftmotorpower)+.3*turn)*speedScale);
+
         topMotor.setPower(gamepad2.right_stick_y*.3);
         boxServo.setPosition(servoposition);
 
         telemetry.addLine("Box: " + servoposition);
-        telemetry.addLine("Base: " + baseMotor.getCurrentPosition());
+        telemetry.addLine("Base pos: " + basePosition);
+        telemetry.addLine("Base act: " + baseMotor.getCurrentPosition());
         telemetry.addLine("Top: " + topMotor.getCurrentPosition());
         telemetry.addLine("FRM: " + frontrightmotor.getCurrentPosition());
         telemetry.addLine("FLM: " + frontleftmotor.getCurrentPosition());
@@ -127,9 +133,11 @@ public class MainRun extends OpMode {
 
         telemetry.addLine("Gamepad1.y: " + y);
         telemetry.addLine("Gamepad1.x: " + x);
+        telemetry.addLine("Gamepad2.x: " + turn);
         telemetry.addLine("IMU: " + heading);
         telemetry.addLine("Joystick: " + radJoystick*(180/Math.PI));
         telemetry.addLine("Current heading: " + radHeading*(180/Math.PI));
+        telemetry.addLine("Target Heading: " + targetHeading);
         telemetry.update();
     }
 }
