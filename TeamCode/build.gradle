@@ -20,6 +20,7 @@ android {
         noCompress 'tflite'
     }
 }
+
 repositories {
     maven{
         url "https://egiintel.jfrog.io/artifactory/librealsense"
