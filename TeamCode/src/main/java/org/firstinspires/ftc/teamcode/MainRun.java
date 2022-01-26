@@ -5,7 +5,9 @@ import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorControllerEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -22,20 +24,27 @@ public class MainRun extends OpMode {
     DcMotor baseMotor;
     DcMotor topMotor;
     Servo boxServo;
+    Servo trapDoor;
+    double trapDoorPosition = 0.1;
     double speedScale = 0.5;
     double frontrightmotorpower;
     double frontleftmotorpower;
     double backrightmotorpower;
     double backleftmotorpower;
-    double servoposition = 0;
+    double boxServoPosition = 0;
 
     int basePosition=0;
+
+    double NEW_P = 6.0;
+    double NEW_I = 3.5;
+    double NEW_D = 0.2;
+    double NEW_F = 5;
 
     BNO055IMU imu;
     Orientation angles;
 
-    final double wheelRadius = 4.8; //cm
-    final double countsPerInch = (2*wheelRadius*Math.PI)/2.54;
+    //final double wheelRadius = 4.8; //cm
+    //final double countsPerInch = (2*wheelRadius*Math.PI)/2.54;
 
     public void init() {
         frontrightmotor = hardwareMap.dcMotor.get("FRM");
@@ -45,9 +54,12 @@ public class MainRun extends OpMode {
         baseMotor = hardwareMap.dcMotor.get("base");
         topMotor = hardwareMap.dcMotor.get("top");
         boxServo = hardwareMap.servo.get("box");
+        trapDoor = hardwareMap.servo.get("door");
 
-        baseMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        baseMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //DcMotorControllerEx baseMotorController = (DcMotorControllerEx)baseMotor.getController();
+        //PIDFCoefficients pidf = new PIDFCoefficients(NEW_P, NEW_I, NEW_D, NEW_F);
+        //baseMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //baseMotorController.setPIDFCoefficients((baseMotor).getPortNumber(), DcMotor.RunMode.RUN_USING_ENCODER, pidf);
 
         topMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         topMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -103,16 +115,19 @@ public class MainRun extends OpMode {
         backrightmotorpower = (Math.sin(targetHeading)+Math.cos(targetHeading))/Math.sqrt(2);
         backleftmotorpower = (Math.sin(targetHeading)-Math.cos(targetHeading))/Math.sqrt(2);
 
-        if (gamepad1.a) servoposition=0.8;
-        else if (gamepad1.b) servoposition=0.4;
-        else if (gamepad1.y) servoposition=0.1;
+        if (gamepad1.a) boxServoPosition=0.8;
+        else if (gamepad1.b) boxServoPosition=0.4;
+        else if (gamepad1.y) boxServoPosition=0.1;
 
-        if (gamepad1.dpad_up) basePosition+=3;
-        else if (gamepad1.dpad_down) basePosition-=3;
+        if (gamepad1.right_bumper) trapDoorPosition=.3;
+        else if (gamepad1.left_bumper) trapDoorPosition=.6;
 
-        baseMotor.setTargetPosition(basePosition);
-        baseMotor.setPower(0.45);
-        baseMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        if (gamepad1.dpad_up) basePosition+=1;
+        else if (gamepad1.dpad_down) basePosition-=1;
+
+        //baseMotor.setTargetPosition(basePosition);
+        //baseMotor.setPower(1);
+        //baseMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         frontrightmotor.setPower((0.7*(speed*frontrightmotorpower)-.3*turn)*speedScale);
         frontleftmotor.setPower((0.7*(speed*frontleftmotorpower)+.3*turn)*speedScale);
@@ -120,9 +135,10 @@ public class MainRun extends OpMode {
         backleftmotor.setPower((0.7*(speed*backleftmotorpower)+.3*turn)*speedScale);
 
         topMotor.setPower(gamepad2.right_stick_y*.3);
-        boxServo.setPosition(servoposition);
+        boxServo.setPosition(boxServoPosition);
+        trapDoor.setPosition(trapDoorPosition);
 
-        telemetry.addLine("Box: " + servoposition);
+        telemetry.addLine("Box: " + boxServoPosition);
         telemetry.addLine("Base pos: " + basePosition);
         telemetry.addLine("Base act: " + baseMotor.getCurrentPosition());
         telemetry.addLine("Top: " + topMotor.getCurrentPosition());
@@ -131,6 +147,7 @@ public class MainRun extends OpMode {
         telemetry.addLine("BRM: " + backrightmotor.getCurrentPosition());
         telemetry.addLine("BLM: " + backleftmotor.getCurrentPosition());
 
+        telemetry.addLine("DOOR: " + trapDoorPosition);
         telemetry.addLine("Gamepad1.y: " + y);
         telemetry.addLine("Gamepad1.x: " + x);
         telemetry.addLine("Gamepad2.x: " + turn);
