@@ -25,13 +25,15 @@ public class MainRun extends OpMode {
     DcMotor topMotor;
     Servo boxServo;
     Servo trapDoor;
-    double trapDoorPosition = 0.1;
+    DcMotor spinMotor;
+    double trapDoorPosition = 0.35;
     double speedScale = 0.5;
     double frontrightmotorpower;
     double frontleftmotorpower;
     double backrightmotorpower;
     double backleftmotorpower;
-    double boxServoPosition = 0;
+    double boxServoPosition = 0.32;
+    double spinMotorPower = 0;
 
     int basePosition=0;
 
@@ -55,14 +57,12 @@ public class MainRun extends OpMode {
         topMotor = hardwareMap.dcMotor.get("top");
         boxServo = hardwareMap.servo.get("box");
         trapDoor = hardwareMap.servo.get("door");
+        spinMotor = hardwareMap.dcMotor.get("spinner");
 
         DcMotorControllerEx baseMotorController = (DcMotorControllerEx)baseMotor.getController();
         PIDFCoefficients pidf = new PIDFCoefficients(NEW_P, NEW_I, NEW_D, NEW_F);
         baseMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         baseMotorController.setPIDFCoefficients((baseMotor).getPortNumber(), DcMotor.RunMode.RUN_USING_ENCODER, pidf);
-
-        //topMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        //topMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         frontrightmotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontrightmotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -116,11 +116,19 @@ public class MainRun extends OpMode {
         backleftmotorpower = (Math.sin(targetHeading)-Math.cos(targetHeading))/Math.sqrt(2);
 
         if (gamepad1.a) boxServoPosition=0.8;
-        else if (gamepad1.b) boxServoPosition=0.4;
-        else if (gamepad1.y) boxServoPosition=0.1;
+        else if (gamepad1.b) boxServoPosition=0.5;
+        else if (gamepad1.y) boxServoPosition=0.32;
 
-        if (gamepad1.right_bumper) trapDoorPosition=.3;
-        else if (gamepad1.left_bumper) trapDoorPosition=.6;
+        if (gamepad1.x) {
+            if (spinMotorPower==0) spinMotorPower=.6;
+            else spinMotorPower=0;
+        }
+
+        if (gamepad1.right_bumper) trapDoorPosition=.35;
+        else if (gamepad1.left_bumper) {
+            trapDoorPosition=.6;
+        }
+
 
         if (gamepad1.dpad_up) basePosition+=2;
         else if (gamepad1.dpad_down) basePosition-=2;
@@ -130,12 +138,14 @@ public class MainRun extends OpMode {
         baseMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         //baseMotor.setPower(gamepad1.left_trigger);
 
+        spinMotor.setPower(spinMotorPower);
+
         frontrightmotor.setPower((0.7*(speed*frontrightmotorpower)-.3*turn)*speedScale);
         frontleftmotor.setPower((0.7*(speed*frontleftmotorpower)+.3*turn)*speedScale);
         backrightmotor.setPower((0.7*(speed*backrightmotorpower)-.3*turn)*speedScale);
         backleftmotor.setPower((0.7*(speed*backleftmotorpower)+.3*turn)*speedScale);
 
-        topMotor.setPower(gamepad1.left_trigger);
+        topMotor.setPower(gamepad1.left_trigger-0.2*gamepad1.right_trigger);
         boxServo.setPosition(boxServoPosition);
         trapDoor.setPosition(trapDoorPosition);
 
