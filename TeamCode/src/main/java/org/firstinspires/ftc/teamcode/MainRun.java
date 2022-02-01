@@ -120,7 +120,7 @@ public class MainRun extends OpMode {
         else if (gamepad1.y) boxServoPosition=0.32;
 
         if (gamepad1.x) {
-            if (spinMotorPower==0) spinMotorPower=.6;
+            if (spinMotorPower==0) spinMotorPower=1;
             else spinMotorPower=0;
         }
 
@@ -128,7 +128,6 @@ public class MainRun extends OpMode {
         else if (gamepad1.left_bumper) {
             trapDoorPosition=.6;
         }
-
 
         if (gamepad1.dpad_up) basePosition+=2;
         else if (gamepad1.dpad_down) basePosition-=2;
