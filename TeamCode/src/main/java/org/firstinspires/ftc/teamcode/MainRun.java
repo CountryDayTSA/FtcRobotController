@@ -27,21 +27,23 @@ public class MainRun extends OpMode {
     Servo trapDoor;
     DcMotor spinMotor;
     double trapDoorPosition = 0.35;
-    double speedScale = 0.5;
+    double speedScale = 0.4;
     double frontrightmotorpower;
     double frontleftmotorpower;
     double backrightmotorpower;
     double backleftmotorpower;
-    double boxServoPosition = 0.32;
+    double boxServoPosition = 0.71;
     double spinMotorPower = 0;
 
     int basePosition=0;
 
-    double NEW_P = 7.0;
-    double NEW_I = 7;
-    double NEW_D = 0.2;
-    double NEW_F = 8;
-// 6 3.5 .2 5
+
+    double NEW_P = 9;
+    double NEW_I = 2;
+    double NEW_D = 0.5;
+    double NEW_F = 0.0;
+//9 2 .5 0
+
     BNO055IMU imu;
     Orientation angles;
 
@@ -76,10 +78,11 @@ public class MainRun extends OpMode {
         backleftmotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backleftmotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        frontrightmotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        //frontrightmotor.setDirection(DcMotorSimple.Direction.REVERSE);
         frontleftmotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        backrightmotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        //backleftmotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        //backrightmotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        backleftmotor.setDirection(DcMotorSimple.Direction.REVERSE);
+
         //baseMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -115,12 +118,12 @@ public class MainRun extends OpMode {
         backrightmotorpower = (Math.sin(targetHeading)+Math.cos(targetHeading))/Math.sqrt(2);
         backleftmotorpower = (Math.sin(targetHeading)-Math.cos(targetHeading))/Math.sqrt(2);
 
-        if (gamepad1.a) boxServoPosition=0.8;
+        if (gamepad1.a) boxServoPosition=0.71;
         else if (gamepad1.b) boxServoPosition=0.5;
-        else if (gamepad1.y) boxServoPosition=0.32;
+        else if (gamepad1.y) boxServoPosition=0.3;
 
         if (gamepad1.x) {
-            if (spinMotorPower==0) spinMotorPower=1;
+            if (spinMotorPower==0) spinMotorPower=.1;
             else spinMotorPower=0;
         }
 
@@ -129,15 +132,25 @@ public class MainRun extends OpMode {
             trapDoorPosition=.6;
         }
 
-        if (gamepad1.dpad_up) basePosition+=2;
-        else if (gamepad1.dpad_down) basePosition-=2;
+        if (gamepad1.dpad_up) basePosition=360;
+        else if (gamepad1.dpad_right) basePosition=200;
+        else if (gamepad1.dpad_down) {
+            basePosition=55;
+        }
 
         baseMotor.setTargetPosition(basePosition);
         baseMotor.setPower(1);
         baseMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        //baseMotor.setPower(gamepad1.left_trigger);
 
         spinMotor.setPower(spinMotorPower);
+
+        if (frontrightmotorpower==0 && frontleftmotorpower==0 && turn==0)
+        {
+            frontrightmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            frontleftmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            backrightmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            backleftmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        }
 
         frontrightmotor.setPower((0.7*(speed*frontrightmotorpower)-.3*turn)*speedScale);
         frontleftmotor.setPower((0.7*(speed*frontleftmotorpower)+.3*turn)*speedScale);
