@@ -32,8 +32,9 @@ public class MainRun extends OpMode {
     double frontleftmotorpower;
     double backrightmotorpower;
     double backleftmotorpower;
-    double boxServoPosition = 0.71;
+    double boxServoPosition = 0;
     double spinMotorPower = 0;
+    double speed;
 
     int basePosition=0;
 
@@ -103,8 +104,8 @@ public class MainRun extends OpMode {
         angles = imu.getAngularOrientation().toAxesReference(AxesReference.INTRINSIC).toAxesOrder(AxesOrder.ZYX);
         double heading = AngleUnit.DEGREES.normalize(angles.firstAngle);
 
-        double speed = Math.sqrt(x*x+y*y);
-        if (Math.abs(speed)>1) speed/=Math.abs(speed);
+        if (Math.abs(y)>=Math.abs(x)) speed=Math.abs(y);
+        else speed=Math.abs(x);
 
         double radJoystick = Math.atan2(y,x);
         if (radJoystick<0) radJoystick+=(2*Math.PI);
@@ -118,9 +119,12 @@ public class MainRun extends OpMode {
         backrightmotorpower = (Math.sin(targetHeading)+Math.cos(targetHeading))/Math.sqrt(2);
         backleftmotorpower = (Math.sin(targetHeading)-Math.cos(targetHeading))/Math.sqrt(2);
 
-        if (gamepad1.a) boxServoPosition=0.71;
+        if (gamepad1.a) boxServoPosition=0.8;
         else if (gamepad1.b) boxServoPosition=0.5;
-        else if (gamepad1.y) boxServoPosition=0.3;
+        else if (gamepad1.y) boxServoPosition=0.1;
+
+        if (-gamepad2.right_stick_y>0.5) boxServoPosition+=.001;
+        else if (-gamepad2.right_stick_y<-0.5) boxServoPosition-=0.001;
 
         if (gamepad1.x) {
             if (spinMotorPower==0) spinMotorPower=.1;
@@ -135,7 +139,7 @@ public class MainRun extends OpMode {
         if (gamepad1.dpad_up) basePosition=360;
         else if (gamepad1.dpad_right) basePosition=200;
         else if (gamepad1.dpad_down) {
-            basePosition=55;
+            basePosition=25;
         }
 
         baseMotor.setTargetPosition(basePosition);
