@@ -84,6 +84,11 @@ public class MainRun extends OpMode {
         //backrightmotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backleftmotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        frontrightmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontleftmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backrightmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backleftmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         //baseMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -119,7 +124,13 @@ public class MainRun extends OpMode {
         backrightmotorpower = (Math.sin(targetHeading)+Math.cos(targetHeading))/Math.sqrt(2);
         backleftmotorpower = (Math.sin(targetHeading)-Math.cos(targetHeading))/Math.sqrt(2);
 
-        if (gamepad1.a) boxServoPosition=0.8;
+        if (gamepad1.dpad_up) basePosition=360;
+        else if (gamepad1.dpad_right) basePosition=200;
+        else if (gamepad1.dpad_down) {
+            basePosition=25;
+        }
+
+        if (gamepad1.a) boxServoPosition=0.65;
         else if (gamepad1.b) boxServoPosition=0.5;
         else if (gamepad1.y) boxServoPosition=0.1;
 
@@ -131,30 +142,25 @@ public class MainRun extends OpMode {
             else spinMotorPower=0;
         }
 
-        if (gamepad1.right_bumper) trapDoorPosition=.35;
-        else if (gamepad1.left_bumper) {
-            trapDoorPosition=.6;
-        }
+        if (gamepad2.left_bumper) boxServoPosition-=0.05;
+        else if (gamepad2.right_bumper) boxServoPosition+=0.05;
 
-        if (gamepad1.dpad_up) basePosition=360;
-        else if (gamepad1.dpad_right) basePosition=200;
-        else if (gamepad1.dpad_down) {
-            basePosition=25;
+        if (gamepad1.right_bumper) {
+            if (basePosition==360) {
+                trapDoorPosition=.7;
+            }
+            else if (basePosition==200) {
+                trapDoorPosition=.45;
+            }
+            else trapDoorPosition=0.6;
         }
+        else if (gamepad1.left_bumper) trapDoorPosition=.35;
 
         baseMotor.setTargetPosition(basePosition);
         baseMotor.setPower(1);
         baseMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         spinMotor.setPower(spinMotorPower);
-
-        if (frontrightmotorpower==0 && frontleftmotorpower==0 && turn==0)
-        {
-            frontrightmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            frontleftmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            backrightmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            backleftmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        }
 
         frontrightmotor.setPower((0.7*(speed*frontrightmotorpower)-.3*turn)*speedScale);
         frontleftmotor.setPower((0.7*(speed*frontleftmotorpower)+.3*turn)*speedScale);
