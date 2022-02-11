@@ -27,7 +27,7 @@ public class MainRun extends OpMode {
     Servo trapDoor;
     DcMotor spinMotor;
     double trapDoorPosition = 0.35;
-    double speedScale = 0.4;
+    double speedScale = 0.5;
     double frontrightmotorpower;
     double frontleftmotorpower;
     double backrightmotorpower;
@@ -37,6 +37,8 @@ public class MainRun extends OpMode {
     double speed;
 
     int basePosition=0;
+
+    byte spin=0;
 
 
     double NEW_P = 9;
@@ -124,10 +126,17 @@ public class MainRun extends OpMode {
         backrightmotorpower = (Math.sin(targetHeading)+Math.cos(targetHeading))/Math.sqrt(2);
         backleftmotorpower = (Math.sin(targetHeading)-Math.cos(targetHeading))/Math.sqrt(2);
 
-        if (gamepad1.dpad_up) basePosition=360;
-        else if (gamepad1.dpad_right) basePosition=200;
+        if (gamepad1.dpad_up) {
+            basePosition=360;
+            boxServoPosition=0.65;
+        }
+        else if (gamepad1.dpad_right) {
+            basePosition=200;
+            boxServoPosition=0.5;
+        }
         else if (gamepad1.dpad_down) {
             basePosition=25;
+            boxServoPosition=0.5;
         }
 
         if (gamepad1.a) boxServoPosition=0.65;
@@ -138,8 +147,14 @@ public class MainRun extends OpMode {
         else if (-gamepad2.right_stick_y<-0.5) boxServoPosition-=0.001;
 
         if (gamepad1.x) {
-            if (spinMotorPower==0) spinMotorPower=.1;
-            else spinMotorPower=0;
+            if (spin==0) {
+                spinMotorPower = 1;
+                spin++;
+            }
+            else {
+                spinMotorPower = 0;
+                spin=0;
+            }
         }
 
         if (gamepad2.left_bumper) boxServoPosition-=0.05;
@@ -162,10 +177,10 @@ public class MainRun extends OpMode {
 
         spinMotor.setPower(spinMotorPower);
 
-        frontrightmotor.setPower((0.7*(speed*frontrightmotorpower)-.3*turn)*speedScale);
-        frontleftmotor.setPower((0.7*(speed*frontleftmotorpower)+.3*turn)*speedScale);
-        backrightmotor.setPower((0.7*(speed*backrightmotorpower)-.3*turn)*speedScale);
-        backleftmotor.setPower((0.7*(speed*backleftmotorpower)+.3*turn)*speedScale);
+        frontrightmotor.setPower((0.8*(speed*frontrightmotorpower)-.2*turn)*speedScale);
+        frontleftmotor.setPower((0.8*(speed*frontleftmotorpower)+.2*turn)*speedScale);
+        backrightmotor.setPower((0.8*(speed*backrightmotorpower)-.2*turn)*speedScale);
+        backleftmotor.setPower((0.8*(speed*backleftmotorpower)+.2*turn)*speedScale);
 
         topMotor.setPower(gamepad1.left_trigger-0.2*gamepad1.right_trigger);
         boxServo.setPosition(boxServoPosition);
