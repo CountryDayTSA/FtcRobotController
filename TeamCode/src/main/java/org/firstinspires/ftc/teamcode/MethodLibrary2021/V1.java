@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.MethodLibrary2021;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorControllerEx;
@@ -16,6 +17,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.RealSense;
 
+@Autonomous
 public class V1 extends LinearOpMode {
     ElapsedTime timer = new ElapsedTime();
     DcMotor frontrightmotor;
@@ -48,16 +50,18 @@ public class V1 extends LinearOpMode {
 
     //final double wheelRadius = 4.8; //cm
     //final double countsPerInch = (2*wheelRadius*Math.PI)/2.54;
-    RealSense DepthSensor = null;
-    RealSense camera = new RealSense(hardwareMap.appContext);
+    //RealSense DepthSensor = null;
+    //RealSense camera = new RealSense(hardwareMap.appContext);
 
     public void runOpMode() {
-        while (getRuntime()<30 && opModeIsActive()) {
+        hardwaremap();
+        waitForStart();
+        while (opModeIsActive()) {
 
         }
     }
 
-    final double countsPerInch = 40;
+    final double countsPerInch = 42;
 
     public void hardwaremap() {
         frontrightmotor = hardwareMap.dcMotor.get("FRM");
@@ -87,10 +91,16 @@ public class V1 extends LinearOpMode {
         backleftmotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backleftmotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        frontrightmotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        //frontrightmotor.setDirection(DcMotorSimple.Direction.REVERSE);
         frontleftmotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        backrightmotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        //backleftmotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        //backrightmotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        backleftmotor.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        frontrightmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontleftmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backrightmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backleftmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         //baseMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -127,12 +137,21 @@ public class V1 extends LinearOpMode {
         backrightmotor.setTargetPosition(target22);
         backleftmotor.setTargetPosition(target11);
 
-        while (isMoving()) {
-            frontrightmotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            frontleftmotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backrightmotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backleftmotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        }
+        frontrightmotorpower = target22/Math.sqrt(2);
+        frontleftmotorpower = target11/Math.sqrt(2);
+        backrightmotorpower = target22/Math.sqrt(2);
+        backleftmotorpower = target11/Math.sqrt(2);
+
+        frontrightmotor.setPower(frontrightmotorpower*speedScale);
+        frontleftmotor.setPower(frontleftmotorpower*speedScale);
+        backrightmotor.setPower(backrightmotorpower*speedScale);
+        backleftmotor.setPower(backleftmotorpower*speedScale);
+
+        frontrightmotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontleftmotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backrightmotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backleftmotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
         frontrightmotor.setPower(0);
         frontleftmotor.setPower(0);
         backrightmotor.setPower(0);
@@ -156,6 +175,7 @@ public class V1 extends LinearOpMode {
         telemetry.addLine("FLM: " + frontleftmotor.getCurrentPosition());
         telemetry.addLine("BRM: " + backrightmotor.getCurrentPosition());
         telemetry.addLine("BLM: " + backleftmotor.getCurrentPosition());
+        telemetry.update();
     }
 
 }

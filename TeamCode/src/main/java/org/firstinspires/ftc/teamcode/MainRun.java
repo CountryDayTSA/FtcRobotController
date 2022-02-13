@@ -86,10 +86,10 @@ public class MainRun extends OpMode {
         //backrightmotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backleftmotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        frontrightmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontleftmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backrightmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backleftmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontrightmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        frontleftmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        backrightmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        backleftmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         //baseMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -139,6 +139,19 @@ public class MainRun extends OpMode {
             boxServoPosition=0.5;
         }
 
+        if (gamepad1.right_stick_button) {
+            BNO055IMU imu;
+
+            BNO055IMU.Parameters parameters2 = new BNO055IMU.Parameters();
+            parameters2.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
+            parameters2.calibrationDataFile = "BNO055IMUCalibration.json";
+            parameters2.loggingEnabled      = true;
+            parameters2.loggingTag          = "IMU";
+            parameters2.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+            imu = hardwareMap.get(BNO055IMU.class, "imu");
+            imu.initialize(parameters2);
+        }
+
         if (gamepad1.a) boxServoPosition=0.65;
         else if (gamepad1.b) boxServoPosition=0.5;
         else if (gamepad1.y) boxServoPosition=0.1;
@@ -160,16 +173,26 @@ public class MainRun extends OpMode {
         if (gamepad2.left_bumper) boxServoPosition-=0.05;
         else if (gamepad2.right_bumper) boxServoPosition+=0.05;
 
-        if (gamepad1.right_bumper) {
+        if (gamepad1.left_bumper) {
             if (basePosition==360) {
                 trapDoorPosition=.7;
             }
             else if (basePosition==200) {
                 trapDoorPosition=.45;
             }
-            else trapDoorPosition=0.6;
+            else trapDoorPosition=0.35;
         }
-        else if (gamepad1.left_bumper) trapDoorPosition=.35;
+
+        if (gamepad1.right_bumper) {
+            if (speedScale==1) speedScale=0.5;
+            else speedScale=1;
+        }
+
+        if (gamepad1.right_trigger>0.1) {
+            basePosition=25;
+            boxServoPosition=0.5;
+        }
+
 
         baseMotor.setTargetPosition(basePosition);
         baseMotor.setPower(1);
@@ -177,10 +200,10 @@ public class MainRun extends OpMode {
 
         spinMotor.setPower(spinMotorPower);
 
-        frontrightmotor.setPower((0.8*(speed*frontrightmotorpower)-.2*turn)*speedScale);
-        frontleftmotor.setPower((0.8*(speed*frontleftmotorpower)+.2*turn)*speedScale);
-        backrightmotor.setPower((0.8*(speed*backrightmotorpower)-.2*turn)*speedScale);
-        backleftmotor.setPower((0.8*(speed*backleftmotorpower)+.2*turn)*speedScale);
+        frontrightmotor.setPower((0.6*(speed*frontrightmotorpower)-.4*turn)*speedScale);
+        frontleftmotor.setPower((0.6*(speed*frontleftmotorpower)+.4*turn)*speedScale);
+        backrightmotor.setPower((0.6*(speed*backrightmotorpower)-.4*turn)*speedScale);
+        backleftmotor.setPower((0.6*(speed*backleftmotorpower)+.4*turn)*speedScale);
 
         topMotor.setPower(gamepad1.left_trigger-0.2*gamepad1.right_trigger);
         boxServo.setPosition(boxServoPosition);
