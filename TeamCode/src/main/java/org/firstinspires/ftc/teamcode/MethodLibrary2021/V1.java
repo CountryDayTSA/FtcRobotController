@@ -48,8 +48,8 @@ public class V1 extends LinearOpMode {
     BNO055IMU imu;
     Orientation angles;
 
-    //final double wheelRadius = 4.8; //cm
-    //final double countsPerInch = (2*wheelRadius*Math.PI)/2.54;
+    final double countsPerInch = 42;
+
     //RealSense DepthSensor = null;
     //RealSense camera = new RealSense(hardwareMap.appContext);
 
@@ -57,11 +57,10 @@ public class V1 extends LinearOpMode {
         hardwaremap();
         waitForStart();
         while (opModeIsActive()) {
+            move(90, 4);
 
         }
     }
-
-    final double countsPerInch = 42;
 
     public void hardwaremap() {
         frontrightmotor = hardwareMap.dcMotor.get("FRM");
@@ -118,48 +117,16 @@ public class V1 extends LinearOpMode {
         return frontrightmotor.isBusy() || frontleftmotor.isBusy() || backrightmotor.isBusy() || backleftmotor.isBusy();
     }
 
-    public void move(int angle, double inches) {
-        Orientation angles;
+    public void move(int angle, double seconds) {
         angles = imu.getAngularOrientation().toAxesReference(AxesReference.INTRINSIC).toAxesOrder(AxesOrder.ZYX);
-        double heading = AngleUnit.DEGREES.normalize(angles.firstAngle);
-
-        double radHeading = heading/(180/Math.PI)+(Math.PI/2);
-        if (radHeading<0) radHeading+=(2*Math.PI);
-
-        double target1 = Math.sin(angle)-Math.cos(angle);
-        double target2 = Math.sin(angle)+Math.cos(angle);
-        target1*=inches*40;
-        target2*=inches*40;
-        int target11 = (int) target1;
-        int target22 = (int) target2;
-        frontrightmotor.setTargetPosition(target11);
-        frontleftmotor.setTargetPosition((target22));
-        backrightmotor.setTargetPosition(target22);
-        backleftmotor.setTargetPosition(target11);
-
-        frontrightmotorpower = target22/Math.sqrt(2);
-        frontleftmotorpower = target11/Math.sqrt(2);
-        backrightmotorpower = target22/Math.sqrt(2);
-        backleftmotorpower = target11/Math.sqrt(2);
-
-        frontrightmotor.setPower(frontrightmotorpower*speedScale);
-        frontleftmotor.setPower(frontleftmotorpower*speedScale);
-        backrightmotor.setPower(backrightmotorpower*speedScale);
-        backleftmotor.setPower(backleftmotorpower*speedScale);
-
-        frontrightmotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        frontleftmotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        backrightmotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        backleftmotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        frontrightmotor.setPower(0);
-        frontleftmotor.setPower(0);
-        backrightmotor.setPower(0);
-        backleftmotor.setPower(0);
-        frontrightmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontleftmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backrightmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backleftmotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        double initHeading = AngleUnit.DEGREES.normalize(angles.firstAngle);
+        double radHeading = Math.toRadians(initHeading) + Math.PI/2;
+        if (radHeading<0) radHeading+=2*Math.PI;
+        telemetry.addLine("H: " + Math.toDegrees(radHeading));
+        double radAngle = Math.toRadians(angle) + Math.PI/2;
+        if (radAngle<0) radAngle+=Math.PI*2;
+        telemetry.addLine("I: " + Math.toDegrees(radAngle));
+        telemetry.update();
     }
 
     public void reset() {

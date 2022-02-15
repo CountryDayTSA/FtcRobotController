@@ -27,7 +27,7 @@ public class MainRun extends OpMode {
     Servo trapDoor;
     DcMotor spinMotor;
     double trapDoorPosition = 0.35;
-    double speedScale = 0.5;
+    double speedScale = 1;
     double frontrightmotorpower;
     double frontleftmotorpower;
     double backrightmotorpower;
@@ -127,7 +127,7 @@ public class MainRun extends OpMode {
         backleftmotorpower = (Math.sin(targetHeading)-Math.cos(targetHeading))/Math.sqrt(2);
 
         if (gamepad1.dpad_up) {
-            basePosition=360;
+            basePosition=370;
             boxServoPosition=0.65;
         }
         else if (gamepad1.dpad_right) {
@@ -136,7 +136,7 @@ public class MainRun extends OpMode {
         }
         else if (gamepad1.dpad_down) {
             basePosition=25;
-            boxServoPosition=0.5;
+            boxServoPosition=0.50;
         }
 
         if (gamepad1.right_stick_button) {
@@ -153,11 +153,8 @@ public class MainRun extends OpMode {
         }
 
         if (gamepad1.a) boxServoPosition=0.65;
-        else if (gamepad1.b) boxServoPosition=0.5;
+        else if (gamepad1.b) boxServoPosition=0.50;
         else if (gamepad1.y) boxServoPosition=0.1;
-
-        if (-gamepad2.right_stick_y>0.5) boxServoPosition+=.001;
-        else if (-gamepad2.right_stick_y<-0.5) boxServoPosition-=0.001;
 
         if (gamepad1.x) {
             if (spin==0) {
@@ -170,15 +167,17 @@ public class MainRun extends OpMode {
             }
         }
 
-        if (gamepad2.left_bumper) boxServoPosition-=0.05;
-        else if (gamepad2.right_bumper) boxServoPosition+=0.05;
+        if (gamepad2.left_bumper) boxServoPosition-=0.005;
+        else if (gamepad2.right_bumper) boxServoPosition+=0.005;
 
         if (gamepad1.left_bumper) {
-            if (basePosition==360) {
-                trapDoorPosition=.7;
+            if (basePosition==370) {
+                if (trapDoorPosition!=.7) trapDoorPosition=.7;
+                else trapDoorPosition=.35;
             }
             else if (basePosition==200) {
-                trapDoorPosition=.45;
+                if (trapDoorPosition!=.45) trapDoorPosition=.45;
+                else trapDoorPosition=0.35;
             }
             else trapDoorPosition=0.35;
         }
@@ -190,7 +189,7 @@ public class MainRun extends OpMode {
 
         if (gamepad1.right_trigger>0.1) {
             basePosition=25;
-            boxServoPosition=0.5;
+            boxServoPosition=0.50;
         }
 
 
@@ -200,12 +199,12 @@ public class MainRun extends OpMode {
 
         spinMotor.setPower(spinMotorPower);
 
-        frontrightmotor.setPower((0.6*(speed*frontrightmotorpower)-.4*turn)*speedScale);
-        frontleftmotor.setPower((0.6*(speed*frontleftmotorpower)+.4*turn)*speedScale);
-        backrightmotor.setPower((0.6*(speed*backrightmotorpower)-.4*turn)*speedScale);
-        backleftmotor.setPower((0.6*(speed*backleftmotorpower)+.4*turn)*speedScale);
+        frontrightmotor.setPower((0.9*(speed*frontrightmotorpower)-.1*turn)*speedScale);
+        frontleftmotor.setPower((0.9*(speed*frontleftmotorpower)+.1*turn)*speedScale);
+        backrightmotor.setPower((0.9*(speed*backrightmotorpower)-.1*turn)*speedScale);
+        backleftmotor.setPower((0.9*(speed*backleftmotorpower)+.1*turn)*speedScale);
 
-        topMotor.setPower(gamepad1.left_trigger-0.2*gamepad1.right_trigger);
+        topMotor.setPower(gamepad1.right_trigger-.3*gamepad1.left_trigger);
         boxServo.setPosition(boxServoPosition);
         trapDoor.setPosition(trapDoorPosition);
 
