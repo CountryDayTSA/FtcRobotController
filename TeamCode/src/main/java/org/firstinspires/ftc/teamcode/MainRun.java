@@ -14,6 +14,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import java.util.Arrays;
 
 @TeleOp
 public class MainRun extends OpMode {
@@ -33,6 +34,7 @@ public class MainRun extends OpMode {
     double backrightmotorpower;
     double backleftmotorpower;
     double boxServoPosition = 0;
+    double boxServoCorrection = 0;
     double spinMotorPower = 0;
     double speed;
 
@@ -40,18 +42,16 @@ public class MainRun extends OpMode {
 
     byte spin=0;
 
+    byte scale=0;
+
 
     double NEW_P = 9;
     double NEW_I = 2;
     double NEW_D = 0.5;
     double NEW_F = 0.0;
-//9 2 .5 0
 
     BNO055IMU imu;
     Orientation angles;
-
-    //final double wheelRadius = 4.8; //cm
-    //final double countsPerInch = (2*wheelRadius*Math.PI)/2.54;
 
     public void init() {
         frontrightmotor = hardwareMap.dcMotor.get("FRM");
@@ -120,23 +120,45 @@ public class MainRun extends OpMode {
         if (radHeading<0) radHeading+=(2*Math.PI);
 
         double targetHeading = radJoystick+(Math.PI/2-radHeading);
+        double square = ((Math.sqrt(2)-1)*(Math.abs(Math.sin(2*targetHeading))))+1;
 
-        frontrightmotorpower = (Math.sin(targetHeading)-Math.cos(targetHeading))/Math.sqrt(2);
-        frontleftmotorpower = (Math.sin(targetHeading)+Math.cos(targetHeading))/Math.sqrt(2);
-        backrightmotorpower = (Math.sin(targetHeading)+Math.cos(targetHeading))/Math.sqrt(2);
-        backleftmotorpower = (Math.sin(targetHeading)-Math.cos(targetHeading))/Math.sqrt(2);
+        frontrightmotorpower = (Math.sin(targetHeading)-Math.cos(targetHeading))/square;
+        frontleftmotorpower = (Math.sin(targetHeading)+Math.cos(targetHeading))/square;
+        backrightmotorpower = (Math.sin(targetHeading)+Math.cos(targetHeading))/square;
+        backleftmotorpower = (Math.sin(targetHeading)-Math.cos(targetHeading))/square;
+
+
+        //Something else maybe. If it doesn't work, just copy these things back to where they came from.
+        frontrightmotorpower = (0.7*(speed*frontrightmotorpower)-.3*turn);
+        frontleftmotorpower = (0.7*(speed*frontleftmotorpower)+.3*turn);
+        backrightmotorpower = (0.7*(speed*backrightmotorpower)-.3*turn);
+        backleftmotorpower = (0.7*(speed*backleftmotorpower)+.3*turn);
+
+
+        //Speed equalizer maybe
+        double [] powerarray = {Math.abs(frontleftmotorpower), Math.abs(frontrightmotorpower), Math.abs(backleftmotorpower), Math.abs(backrightmotorpower)};
+        Arrays.sort(powerarray);
+
+        double max = powerarray[powerarray.length - 1];
+
+        frontleftmotorpower = frontleftmotorpower/max;
+        frontrightmotorpower = frontrightmotorpower/max;
+        backleftmotorpower = backleftmotorpower/max;
+        backrightmotorpower = backrightmotorpower/max;
+
+        //End of equalizer maybe
 
         if (gamepad1.dpad_up) {
-            basePosition=370;
+            basePosition=380;
             boxServoPosition=0.65;
         }
         else if (gamepad1.dpad_right) {
-            basePosition=200;
+            basePosition=215;
             boxServoPosition=0.5;
         }
         else if (gamepad1.dpad_down) {
             basePosition=25;
-            boxServoPosition=0.50;
+            boxServoPosition=0.1;
         }
 
         if (gamepad1.right_stick_button) {
@@ -167,25 +189,30 @@ public class MainRun extends OpMode {
             }
         }
 
-        if (gamepad2.left_bumper) boxServoPosition-=0.005;
-        else if (gamepad2.right_bumper) boxServoPosition+=0.005;
+        if (gamepad2.left_bumper) boxServoCorrection-=0.005;
+        else if (gamepad2.right_bumper) boxServoCorrection+=0.005;
+
+        if (gamepad2.left_trigger>0.1) basePosition+=2;
+        if (gamepad1.right_trigger>0.1) basePosition-=2;
 
         if (gamepad1.left_bumper) {
-            if (basePosition==370) {
-                if (trapDoorPosition!=.7) trapDoorPosition=.7;
+            if (basePosition==380) {
+                if (trapDoorPosition!=.75) trapDoorPosition=.75;
                 else trapDoorPosition=.35;
             }
-            else if (basePosition==200) {
-                if (trapDoorPosition!=.45) trapDoorPosition=.45;
+            else if (basePosition==215) {
+                if (trapDoorPosition!=.55) trapDoorPosition=.55;
                 else trapDoorPosition=0.35;
             }
             else trapDoorPosition=0.35;
         }
 
-        if (gamepad1.right_bumper) {
-            if (speedScale==1) speedScale=0.5;
-            else speedScale=1;
+        if (gamepad1.right_bumper && scale==0) {
+            if (speedScale!=1) speedScale=1;
+            else speedScale=0.5;
+            scale++;
         }
+        else scale=0;
 
         if (gamepad1.right_trigger>0.1) {
             basePosition=25;
@@ -199,13 +226,13 @@ public class MainRun extends OpMode {
 
         spinMotor.setPower(spinMotorPower);
 
-        frontrightmotor.setPower((0.9*(speed*frontrightmotorpower)-.1*turn)*speedScale);
-        frontleftmotor.setPower((0.9*(speed*frontleftmotorpower)+.1*turn)*speedScale);
-        backrightmotor.setPower((0.9*(speed*backrightmotorpower)-.1*turn)*speedScale);
-        backleftmotor.setPower((0.9*(speed*backleftmotorpower)+.1*turn)*speedScale);
+        frontrightmotor.setPower(frontrightmotorpower*speedScale);
+        frontleftmotor.setPower(frontleftmotorpower*speedScale);
+        backrightmotor.setPower(backrightmotorpower*speedScale);
+        backleftmotor.setPower(backleftmotorpower*speedScale);
 
         topMotor.setPower(gamepad1.right_trigger-.3*gamepad1.left_trigger);
-        boxServo.setPosition(boxServoPosition);
+        boxServo.setPosition(boxServoPosition + boxServoCorrection);
         trapDoor.setPosition(trapDoorPosition);
 
         telemetry.addLine("Box: " + boxServoPosition);
